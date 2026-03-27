@@ -1,55 +1,91 @@
 # jSwitch
 
-CLI per gestire versioni Java (JDK) da terminale, in stile `nvm`.
+A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with Amazon Corretto installation support.
 
-## Requisiti
+## Requirements
 
-- Node.js installato
-- Windows (per la gestione di `JAVA_HOME` con `setx`)
+- Node.js installed
+- Windows (for `JAVA_HOME` management via `setx`)
 
-## Installazione locale
+## Local installation
 
-Nel progetto:
+Inside the project:
 
 ```powershell
 npm link
 ```
 
-Dopo il link, il comando `jswitch` sara disponibile nel terminale.
+After linking, the `jswitch` command will be available in your terminal.
 
-## Utilizzo
+## Usage
 
-1. Configura la cartella radice delle JDK:
+1. Configure the JDK root folder (it will be created if it does not exist):
 
 ```powershell
 jswitch start
 ```
 
-2. Elenca le JDK trovate:
+2. List locally installed JDKs:
 
 ```powershell
 jswitch list
 ```
 
-3. Imposta `JAVA_HOME` su una JDK specifica:
+3. List remote JDKs available on Amazon Corretto:
 
 ```powershell
-jswitch use <nome_jdk>
+jswitch remote-list
 ```
 
-Esempio:
+4. Install a JDK from Amazon Corretto:
+
+```powershell
+jswitch install <jdk_name>
+```
+
+Valid examples:
+
+```powershell
+jswitch install corretto-21
+jswitch install 21
+```
+
+5. Set `JAVA_HOME` to a specific JDK:
+
+```powershell
+jswitch use <jdk_name>
+```
+
+Example:
 
 ```powershell
 jswitch use corretto-1.8.0_482
 ```
 
-4. Mostra JDK corrente:
+6. Show the current JDK:
 
 ```powershell
 jswitch current
 ```
 
-## Note
+7. Show command help:
 
-- `jswitch use` imposta `JAVA_HOME` a livello utente (persistente) con `setx`.
-- Dopo `jswitch use`, apri un nuovo terminale per vedere il nuovo valore in tutte le shell.
+```powershell
+jswitch --help
+```
+
+or:
+
+```powershell
+jswitch -h
+```
+
+## Notes
+
+- `jswitch use` sets `JAVA_HOME` at user level (persistent) using `setx`.
+- After `jswitch use`, open a new terminal session to pick up the updated value in all shells.
+- All commands (except `start` and `help`) require `jswitch start` to be configured first.
+
+## Author
+
+Enrico Palmisano
