@@ -1,0 +1,19 @@
+{
+  "name": "jswitch",
+  "version": "1.0.0",
+  "description": "Switch Java JDK versions from terminal",
+  "bin": {
+    "jswitch": "./jswitch.js"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "start": "node jswitch.js"
+  },
+  "keywords": [
+    "java",
+    "jdk",
+    "switch",
+    "cli"
+  ],
+  "license": "MIT"
+}
