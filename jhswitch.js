@@ -3,10 +3,13 @@
 "use strict";
 
 const {
-  runStart,
+  runChangeDir,
+  runCurrentDir,
+  runResetDefDir,
   runRemoteList,
   runInstall,
   runList,
+  runUninstall,
   runUse,
   runCurrent,
   printHelp
@@ -17,8 +20,14 @@ async function main() {
 
   try {
     switch (command) {
-      case "start":
-        await runStart();
+      case "change-dir":
+        await runChangeDir();
+        break;
+      case "current-dir":
+        runCurrentDir();
+        break;
+      case "reset-def-dir":
+        await runResetDefDir();
         break;
       case "list":
         runList();
@@ -28,6 +37,9 @@ async function main() {
         break;
       case "install":
         await runInstall(arg1);
+        break;
+      case "uninstall":
+        await runUninstall(arg1);
         break;
       case "use":
         runUse(arg1);
