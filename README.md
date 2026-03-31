@@ -7,18 +7,18 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 ## Requirements
 
 - **Microsoft Windows** (64-bit; the tool is not supported on other operating systems)
-- Node.js installed
-- PowerShell available (used for downloads and archive extraction)
+- PowerShell 5.1+ (used by `jhswitch.ps1`)
 
 ## Local installation
 
-Inside the project:
+This project no longer requires Node.js/JavaScript at runtime.
 
 ```powershell
-npm link
+# from project folder
+.\jhswitch.cmd --help
 ```
 
-After linking, the `jhswitch` command will be available in your terminal.
+To use `jhswitch` globally, add the project folder to your `PATH` (so `jhswitch.cmd` is callable from any terminal), or copy `jhswitch.cmd` + `jhswitch.ps1` to a folder already in `PATH`.
 
 ## JDK install folder
 
@@ -131,21 +131,17 @@ or:
 jhswitch -h
 ```
 
-## Extending vendor support (strategy pattern)
+## Implementation
 
-Remote install is implemented with one **strategy module** per vendor under `lib/providers/`. Each strategy exports:
+The CLI is implemented with Windows-native scripts:
 
-- `id`, `displayName`
-- `listRemoteOffers(fetchText)` — returns `{ folderName }` entries for Windows x64
-- `tryParseInstallRequest(rawName)` — returns `{ folderName, major }` or `null`
-- `getWindowsX64ZipUrl(selection)` — download URL for that selection
-
-Register a new strategy in `lib/providers/index.js` (`strategies` array). Resolution order matters: the first strategy whose `tryParseInstallRequest` matches wins.
+- `jhswitch.cmd` (entrypoint for `cmd`/`PowerShell`)
+- `jhswitch.ps1` (all command logic)
 
 ## Notes
 
-- `jhswitch use` sets `JAVA_HOME` at user level (persistent) using `setx`.
-- Uninstalling the last JDK can clear `JAVA_HOME` via `reg delete` on the user environment (HKCU) when you confirm with **Y**.
+- `jhswitch use` sets `JAVA_HOME` at user level (persistent) through Windows user environment variables.
+- Uninstalling the last JDK can clear `JAVA_HOME` from the user environment when you confirm with **Y**.
 - After `jhswitch use` or changing `JAVA_HOME`, open a new terminal session to pick up the updated value in all shells.
 
 ## Author
