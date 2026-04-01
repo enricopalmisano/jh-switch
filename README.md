@@ -9,22 +9,47 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 - **Microsoft Windows** (64-bit; the tool is not supported on other operating systems)
 - PowerShell 5.1+ (used by `jhswitch.ps1`)
 
-## Local installation
+## Installation
 
 This project no longer requires Node.js/JavaScript at runtime.
 
+### Global Installation (Recommended)
+
+From the project root, run:
+
+```batch
+installer\install.bat
+```
+
+The installer will:
+- Copy `jhswitch.cmd`, `jhswitch.ps1`, and `providers.ps1` to `%APPDATA%\jhswitch`
+- Add `%APPDATA%\jhswitch` to your user `PATH`
+
+After installation, restart your terminal and run:
+
 ```powershell
-# from project folder
+jhswitch --help
+```
+
+### Uninstall
+
+From the project root, run:
+
+```batch
+installer\uninstall.bat
+```
+
+This will remove `%APPDATA%\jhswitch` and clean `%APPDATA%\jhswitch` from your user `PATH`.
+
+### Local Installation (Development)
+
+To test jhSwitch locally without installing globally:
+
+```powershell
 .\jhswitch.cmd --help
 ```
 
-To use `jhswitch` globally, add the project folder to your `PATH` (so `jhswitch.cmd` is callable from any terminal), or copy `jhswitch.cmd` + `jhswitch.ps1` to a folder already in `PATH`.
-
 ## JDK install folder
-
-By default, downloaded JDKs are stored under **`%USERPROFILE%\.jhsdk`** (for example `C:\Users\YourName\.jhsdk`). The folder is created automatically when needed.
-
-To use a different directory:
 
 ```powershell
 jhswitch change-dir

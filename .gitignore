@@ -1,0 +1,16 @@
+# NSIS Generated Files
+jhswitch-installer.exe
+*.exe
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# JetBrains
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+*.code-workspace
+/AGENTS.md
