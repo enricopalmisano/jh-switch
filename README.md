@@ -11,9 +11,17 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 
 ## Installation
 
-### Global Installation (Recommended)
+### Step 1: Download the Project from GitHub
 
-From the project root, run:
+1. Go to the repository on GitHub
+2. Click the green **Code** button
+3. Choose one of:
+   - **Clone with Git**: `git clone <repository-url>`
+   - **Download ZIP**: Extract the `.zip` file to your desired location
+
+### Step 2: Global Installation (Recommended)
+
+From the project root directory, run:
 
 ```batch
 installer\install.bat
