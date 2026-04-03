@@ -7,24 +7,47 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 ## Requirements
 
 - **Microsoft Windows** (64-bit; the tool is not supported on other operating systems)
-- Node.js installed
-- PowerShell available (used for downloads and archive extraction)
+- PowerShell 5.1+ (used by `jhswitch.ps1`)
 
-## Local installation
+## Installation
 
-Inside the project:
+### Global Installation (Recommended)
 
-```powershell
-npm link
+From the project root, run:
+
+```batch
+installer\install.bat
 ```
 
-After linking, the `jhswitch` command will be available in your terminal.
+The installer will:
+- Copy `jhswitch.cmd`, `jhswitch.ps1`, and `providers.ps1` to `%APPDATA%\jhswitch`
+- Add `%APPDATA%\jhswitch` to your user `PATH`
+
+After installation, restart your terminal and run:
+
+```powershell
+jhswitch --help
+```
+
+### Uninstall
+
+From the project root, run:
+
+```batch
+installer\uninstall.bat
+```
+
+This will remove `%APPDATA%\jhswitch` and clean `%APPDATA%\jhswitch` from your user `PATH`.
+
+### Local Installation (Development)
+
+To test jhSwitch locally without installing globally:
+
+```powershell
+.\jhswitch.cmd --help
+```
 
 ## JDK install folder
-
-By default, downloaded JDKs are stored under **`%USERPROFILE%\.jhsdk`** (for example `C:\Users\YourName\.jhsdk`). The folder is created automatically when needed.
-
-To use a different directory:
 
 ```powershell
 jhswitch change-dir
@@ -131,23 +154,23 @@ or:
 jhswitch -h
 ```
 
-## Extending vendor support (strategy pattern)
+## Implementation
 
-Remote install is implemented with one **strategy module** per vendor under `lib/providers/`. Each strategy exports:
+The CLI is implemented with Windows-native scripts:
 
-- `id`, `displayName`
-- `listRemoteOffers(fetchText)` — returns `{ folderName }` entries for Windows x64
-- `tryParseInstallRequest(rawName)` — returns `{ folderName, major }` or `null`
-- `getWindowsX64ZipUrl(selection)` — download URL for that selection
-
-Register a new strategy in `lib/providers/index.js` (`strategies` array). Resolution order matters: the first strategy whose `tryParseInstallRequest` matches wins.
+- `jhswitch.cmd` (entrypoint for `cmd`/`PowerShell`)
+- `jhswitch.ps1` (all command logic)
 
 ## Notes
 
-- `jhswitch use` sets `JAVA_HOME` at user level (persistent) using `setx`.
-- Uninstalling the last JDK can clear `JAVA_HOME` via `reg delete` on the user environment (HKCU) when you confirm with **Y**.
+- `jhswitch use` sets `JAVA_HOME` at user level (persistent) through Windows user environment variables.
+- Uninstalling the last JDK can clear `JAVA_HOME` from the user environment when you confirm with **Y**.
 - After `jhswitch use` or changing `JAVA_HOME`, open a new terminal session to pick up the updated value in all shells.
 
 ## Author
 
 Enrico Palmisano
+
+[Supporta il progetto con una donazione su PayPal](https://www.paypal.me/enricopalmisano)
+
+[![PayPal](https://img.shields.io/badge/PayPal-004595?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/enricopalmisano)
