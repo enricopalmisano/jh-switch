@@ -11,8 +11,6 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 
 ## Installation
 
-This project no longer requires Node.js/JavaScript at runtime.
-
 ### Global Installation (Recommended)
 
 From the project root, run:
@@ -172,3 +170,7 @@ The CLI is implemented with Windows-native scripts:
 ## Author
 
 Enrico Palmisano
+
+[Supporta il progetto con una donazione su PayPal](https://www.paypal.me/enricopalmisano)
+
+[![PayPal](https://img.shields.io/badge/PayPal-004595?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/enricopalmisano)
