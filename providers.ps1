@@ -12,7 +12,12 @@ class JdkProvider {
     [string[]] GetAvailableMajors() {
         throw "This method must be implemented by subclasses"
     }
-    
+
+    # Versioni con numero completo; i provider possono fare override per maggior dettaglio
+    [object[]] GetAvailableMajorsWithVersions() {
+        return @($this.GetAvailableMajors() | ForEach-Object { @{ Major = $_; FullVersion = $_ } })
+    }
+
     # Metodo astratto: risolvere un nome in dettagli di installazione
     [object] ResolveInstall([string]$inputName) {
         throw "This method must be implemented by subclasses"
@@ -66,13 +71,27 @@ class CorrettoProvider : JdkProvider {
         
         if ($major) {
             return @{
-                Provider = $this.Name
-                FolderName = "corretto-$major"
+                Provider    = $this.Name
+                FolderName  = "corretto-$major"
                 DownloadUrl = "https://corretto.aws/downloads/latest/amazon-corretto-$major-x64-windows-jdk.zip"
-                Major = $major
+                ChecksumUrl = "https://corretto.aws/downloads/latest_checksum/amazon-corretto-$major-x64-windows-jdk"
+                Major       = $major
             }
         }
         return $null
+    }
+
+    [object[]] GetAvailableMajorsWithVersions() {
+        $majors = $this.GetAvailableMajors()
+        $result = @()
+        foreach ($major in $majors) {
+            $fv = $major
+            try {
+                $fv = (Invoke-WebRequest -UseBasicParsing -Uri "https://corretto.aws/downloads/latest_version/amazon-corretto-$major-x64-windows-jdk").Content.Trim()
+            } catch {}
+            $result += @{ Major = $major; FullVersion = $fv }
+        }
+        return $result
     }
 }
 
@@ -113,6 +132,69 @@ class MicrosoftProvider : JdkProvider {
     }
 }
 
+# Provider per Eclipse Temurin (Adoptium)
+class TemurinProvider : JdkProvider {
+    TemurinProvider() : base("temurin", @("eclipse-temurin", "adoptium")) {}
+
+    [string[]] GetAvailableMajors() {
+        try {
+            $obj = (Invoke-WebRequest -UseBasicParsing -Uri "https://api.adoptium.net/v3/info/available_releases").Content | ConvertFrom-Json
+            return @($obj.available_releases | Sort-Object)
+        } catch {
+            return @("8", "11", "17", "21")
+        }
+    }
+
+    [object[]] GetAvailableMajorsWithVersions() {
+        $majors = $this.GetAvailableMajors()
+        $result = @()
+        foreach ($major in $majors) {
+            $fv = "$major"
+            try {
+                $apiUrl = "https://api.adoptium.net/v3/assets/latest/$major/hotspot?architecture=x64&image_type=jdk&os=windows&vendor=eclipse"
+                $items = (Invoke-WebRequest -UseBasicParsing -Uri $apiUrl).Content | ConvertFrom-Json
+                if ($items -and $items.Count -gt 0) { $fv = $items[0].version.semver }
+            } catch {}
+            $result += @{ Major = "$major"; FullVersion = $fv }
+        }
+        return $result
+    }
+
+    [bool] CanHandle([string]$inputName) {
+        $name = $inputName.Trim().ToLowerInvariant()
+        return ($name -match '^(?:temurin|eclipse-temurin|adoptium)-(\d+)$')
+    }
+
+    [object] ResolveInstall([string]$inputName) {
+        $name = $inputName.Trim().ToLowerInvariant()
+        if ($name -match '^(?:temurin|eclipse-temurin|adoptium)-(\d+)$') {
+            $major = $Matches[1]
+            $downloadUrl = $null
+            $expectedChecksum = $null
+            try {
+                $apiUrl = "https://api.adoptium.net/v3/assets/latest/$major/hotspot?architecture=x64&image_type=jdk&os=windows&vendor=eclipse"
+                $items = (Invoke-WebRequest -UseBasicParsing -Uri $apiUrl).Content | ConvertFrom-Json
+                if ($items -and $items.Count -gt 0) {
+                    $downloadUrl        = $items[0].binary.package.link
+                    $expectedChecksum   = $items[0].binary.package.checksum
+                }
+            } catch {}
+            if (-not $downloadUrl) {
+                throw "Could not resolve download URL for temurin-$major from the Adoptium API. Check your connection or run 'jhswitch remote-list'."
+            }
+            $result = @{
+                Provider    = $this.Name
+                FolderName  = "temurin-$major"
+                DownloadUrl = $downloadUrl
+                Major       = $major
+            }
+            if ($expectedChecksum) { $result["ExpectedChecksum"] = $expectedChecksum }
+            return $result
+        }
+        return $null
+    }
+}
+
 # Registry dei provider - gestore centrale delle Strategy
 class ProviderRegistry {
     [JdkProvider[]]$Providers
@@ -120,7 +202,8 @@ class ProviderRegistry {
     ProviderRegistry() {
         $this.Providers = @(
             [CorrettoProvider]::new(),
-            [MicrosoftProvider]::new()
+            [MicrosoftProvider]::new(),
+            [TemurinProvider]::new()
         )
     }
     
@@ -144,12 +227,17 @@ class ProviderRegistry {
     [hashtable] GetAllAvailableJdks() {
         $result = @{}
         foreach ($provider in $this.Providers) {
-            $majors = $provider.GetAvailableMajors()
+            $entries      = $provider.GetAvailableMajorsWithVersions()
             $providerName = $provider.Name
+            $displayNames = @($entries | ForEach-Object {
+                $label = "$providerName-$($_.Major)"
+                if ($_.FullVersion -ne $_.Major) { $label += "  ($($_.FullVersion))" }
+                $label
+            })
             $result[$providerName] = @{
-                Provider = $provider
-                Majors = $majors
-                DisplayNames = @($majors | ForEach-Object { "$providerName-$_" })
+                Provider     = $provider
+                Majors       = @($entries | ForEach-Object { $_.Major })
+                DisplayNames = $displayNames
             }
         }
         return $result
