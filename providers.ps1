@@ -87,7 +87,10 @@ class CorrettoProvider : JdkProvider {
         foreach ($major in $majors) {
             $fv = $major
             try {
-                $fv = (Invoke-WebRequest -UseBasicParsing -Uri "https://corretto.aws/downloads/latest_version/amazon-corretto-$major-x64-windows-jdk").Content.Trim()
+                $apiUrl  = "https://api.github.com/repos/corretto/corretto-$major/releases/latest"
+                $headers = @{ "User-Agent" = "jhswitch" }
+                $json    = (Invoke-WebRequest -UseBasicParsing -Uri $apiUrl -Headers $headers).Content | ConvertFrom-Json
+                if ($json.tag_name) { $fv = $json.tag_name.TrimStart('v') }
             } catch {}
             $result += @{ Major = $major; FullVersion = $fv }
         }

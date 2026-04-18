@@ -59,10 +59,6 @@ Source: "..\jhswitch.cmd";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\jhswitch.ps1";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\providers.ps1";  DestDir: "{app}"; Flags: ignoreversion
 
-[Messages]
-; Shown on the final installer page
-FinishedLabel=jhSwitch has been installed successfully.%n%nOpen a new terminal and run:%n    jhswitch --help
-
 [Code]
 { ===========================================================
   User-scoped PATH helpers
@@ -124,6 +120,16 @@ end;
 { ===========================================================
   Inno Setup step hooks
   =========================================================== }
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if CurPageID = wpFinished then
+    WizardForm.FinishedLabel.Caption :=
+      'jhSwitch has been installed successfully.' + #13#10 + #13#10 +
+      'Open a new PowerShell terminal and run:' + #13#10 +
+      '    jhswitch --help' + #13#10 + #13#10 +
+      'to get started.';
+end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
