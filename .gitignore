@@ -1,7 +1,3 @@
-# NSIS Generated Files
-jhswitch-installer.exe
-*.exe
-
 # OS Files
 .DS_Store
 Thumbs.db

@@ -1,6 +1,6 @@
 # jhSwitch
 
-A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with remote install from **Amazon Corretto** and **Microsoft Build of OpenJDK** (Windows x64).
+A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with remote install from **Amazon Corretto**, **Microsoft Build of OpenJDK**, and **Eclipse Temurin** (Adoptium) (Windows x64).
 
 **jhSwitch runs only on Windows.** Commands that touch the network, extract archives, or change `JAVA_HOME` are implemented for Windows (x64) and are not supported on macOS or Linux.
 
@@ -11,7 +11,21 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
 
 ## Installation
 
-### Step 1: Download the Project from GitHub
+### Option A – GUI Installer (Recommended)
+
+1. Go to the repository on GitHub and download the latest `jhswitch-setup.exe` from the **Releases** page.
+2. Double-click the `.exe` and follow the wizard (no administrator rights required).
+3. Restart the terminal and run:
+
+```powershell
+jhswitch --help
+```
+
+The installer registers jhSwitch in **Apps & Features** (Windows Settings) / **Programs and Features** (Control Panel), so you can uninstall it from there at any time.
+
+### Option B – Command-line (from source)
+
+#### Step 1: Download the Project from GitHub
 
 1. Go to the repository on GitHub
 2. Click the green **Code** button
@@ -19,7 +33,7 @@ A CLI to manage Java (JDK) versions from the terminal, similar to `nvm`, with re
    - **Clone with Git**: `git clone <repository-url>`
    - **Download ZIP**: Extract the `.zip` file to your desired location
 
-### Step 2: Global Installation (Recommended)
+#### Step 2: Run the batch installer
 
 From the project root directory, run:
 
@@ -37,7 +51,7 @@ After installation, restart your terminal and run:
 jhswitch --help
 ```
 
-### Uninstall
+#### Uninstall (batch)
 
 From the project root, run:
 
@@ -45,15 +59,25 @@ From the project root, run:
 installer\uninstall.bat
 ```
 
-This will remove `%APPDATA%\jhswitch` and clean `%APPDATA%\jhswitch` from your user `PATH`.
+This will remove `%APPDATA%\jhswitch` and clean it from your user `PATH`.
 
 ### Local Installation (Development)
 
-To test jhSwitch locally without installing globally:
+To test jhSwitch locally without installing:
 
 ```powershell
 .\jhswitch.cmd --help
 ```
+
+### Build the GUI installer from source
+
+Requires [Inno Setup 6](https://jrsoftware.org/isinfo.php).
+
+```bat
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\jhswitch.iss
+```
+
+The compiled installer is placed in `installer\Output\jhswitch-setup.exe`.
 
 ## JDK install folder
 
@@ -85,6 +109,8 @@ The same **move** (**Y** / **N**), optional **`JAVA_HOME` update** (**Y** / **N*
 
 ```powershell
 jhswitch list
+# alias:
+jhswitch ls
 ```
 
 2. List remote JDKs from all supported vendors:
@@ -93,11 +119,17 @@ jhswitch list
 jhswitch remote-list
 ```
 
-3. Install a JDK (folder name must match a line from `remote-list`):
+Results are cached for **1 hour** in `%USERPROFILE%\.jhswitch\remote-cache.json`. Delete that file to force an immediate refresh.
+
+3. Install a JDK (use any name shown by `remote-list`):
 
 ```powershell
 jhswitch install <jdk_name>
+# alias:
+jhswitch i <jdk_name>
 ```
+
+Downloads are verified against their **SHA256 checksum** before extraction.
 
 Corretto examples:
 
@@ -113,6 +145,14 @@ Microsoft Build of OpenJDK examples:
 ```powershell
 jhswitch install microsoft-jdk-21
 jhswitch install ms-jdk-17
+```
+
+Eclipse Temurin (Adoptium) examples:
+
+```powershell
+jhswitch install temurin-21
+jhswitch install eclipse-temurin-17
+jhswitch install adoptium-11
 ```
 
 4. Remove a downloaded JDK folder:
@@ -136,19 +176,19 @@ Example:
 
 ```powershell
 jhswitch use corretto-21
-```
-
-or:
-
-```powershell
 jhswitch use microsoft-jdk-21
+jhswitch use temurin-21
 ```
+
+This sets `JAVA_HOME` **and** adds `%JAVA_HOME%\bin` to your user `PATH` (removing the previous JDK's bin entry).
 
 6. Show the current JDK:
 
 ```powershell
 jhswitch current
 ```
+
+A warning is shown if `JAVA_HOME` points outside the jhSwitch-managed JDK root (e.g. set by another tool).
 
 7. Show command help:
 
@@ -171,9 +211,11 @@ The CLI is implemented with Windows-native scripts:
 
 ## Notes
 
-- `jhswitch use` sets `JAVA_HOME` at user level (persistent) through Windows user environment variables.
+- `jhswitch use` sets `JAVA_HOME` **and** updates `%JAVA_HOME%\bin` in the user `PATH` — both at user scope (persistent).
 - Uninstalling the last JDK can clear `JAVA_HOME` from the user environment when you confirm with **Y**.
 - After `jhswitch use` or changing `JAVA_HOME`, open a new terminal session to pick up the updated value in all shells.
+- Downloads are SHA256-verified before extraction. Corretto checksums come from `corretto.aws`; Temurin checksums come from the Adoptium API. Microsoft JDK has no public checksum endpoint.
+- `remote-list` results are cached for 1 hour. Delete `%USERPROFILE%\.jhswitch\remote-cache.json` to force a refresh.
 
 ## Author
 
